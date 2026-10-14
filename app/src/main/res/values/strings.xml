@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- General -->
+    <string name="app_name">ByeDPI</string>
+    <string name="app_tagline">Local DPI circumvention</string>
+    <string name="value_none">—</string>
+    <string name="cd_logo">ByeDPI logo</string>
+    <string name="cd_settings">Settings</string>
+    <string name="cd_diagnostics">Diagnostics</string>
+    <string name="cd_back">Back</string>
+
+    <!-- Actions -->
+    <string name="action_connect">Connect</string>
+    <string name="action_disconnect">Disconnect</string>
+    <string name="action_connecting">Connecting…</string>
+    <string name="action_disconnecting">Disconnecting…</string>
+    <string name="action_save">Save</string>
+    <string name="action_reset">Reset</string>
+    <string name="action_copy">Copy</string>
+    <string name="action_clear">Clear</string>
+    <string name="action_run_check">Run check</string>
+
+    <!-- Connection status -->
+    <string name="status_disconnected">Disconnected</string>
+    <string name="status_connecting">Connecting</string>
+    <string name="status_connected">Connected</string>
+    <string name="status_disconnecting">Disconnecting</string>
+    <string name="status_error">Connection failed</string>
+    <string name="status_detail_disconnected">Traffic is not being modified. Tap Connect to start the engine.</string>
+    <string name="status_detail_connecting">Starting the ByeDPI proxy and the VPN tunnel…</string>
+    <string name="status_detail_connected">The proxy is listening and the tunnel is running.</string>
+    <string name="status_detail_disconnecting">Stopping the tunnel and the proxy…</string>
+    <string name="status_detail_error">%1$s</string>
+
+    <!-- Main screen -->
+    <string name="section_session">Session</string>
+    <string name="label_engine">ByeDPI proxy</string>
+    <string name="label_tunnel">VPN tunnel</string>
+    <string name="label_sent">Sent</string>
+    <string name="label_received">Received</string>
+    <string name="label_uptime">Uptime</string>
+    <string name="label_strategy">Active strategy</string>
+    <string name="hint_strategy">Change engine options in Settings.</string>
+    <string name="value_stopped">Stopped</string>
+    <string name="value_running">Running</string>
+    <string name="value_listening">Listening on %1$s</string>
+    <string name="value_not_running">Not running</string>
+    <string name="footer_note">ByeDPI does not encrypt your traffic or hide your IP address. It only changes how connections are started so that DPI filters misread them. Results depend on your network and chosen strategy.</string>
+
+    <!-- Errors -->
+    <string name="error_vpn_permission_denied">VPN permission was not granted. ByeDPI needs it to route traffic through the local proxy.</string>
+    <string name="error_notification_permission">Notifications are blocked. The connection still works, but the status notification is hidden.</string>
+    <string name="error_invalid_settings">Settings are invalid: %1$s</string>
+    <string name="error_proxy_start_failed">The ByeDPI engine failed to start (code %1$d).</string>
+    <string name="error_proxy_not_listening">The ByeDPI proxy did not start listening on port %1$d.</string>
+    <string name="error_tunnel_failed">The VPN tunnel failed to start.</string>
+    <string name="error_vpn_establish">Android refused to create the VPN interface.</string>
+    <string name="error_proxy_stopped">The ByeDPI engine stopped unexpectedly.</string>
+
+    <!-- Notification -->
+    <string name="notification_channel_name">Connection status</string>
+    <string name="notification_channel_description">Shown while ByeDPI is running</string>
+    <string name="notification_title">ByeDPI is running</string>
+    <string name="notification_text">Local proxy %1$s</string>
+    <string name="notification_action_disconnect">Disconnect</string>
+
+    <!-- Settings screen -->
+    <string name="settings_title">Settings</string>
+    <string name="section_network">Network</string>
+    <string name="section_strategy">Bypass strategy</string>
+    <string name="section_preview">Command preview</string>
+    <string name="hint_port">Local proxy port</string>
+    <string name="helper_port">The proxy only listens on 127.0.0.1.</string>
+    <string name="hint_dns">DNS server for the VPN</string>
+    <string name="helper_dns">IPv4 or IPv6 address. ByeDPI does not bypass DNS blocking.</string>
+    <string name="switch_udp">Proxy UDP traffic</string>
+    <string name="switch_ipv6">Tunnel IPv6 traffic</string>
+    <string name="switch_custom">Use custom arguments</string>
+    <string name="hint_method">Desync method</string>
+    <string name="hint_position">Position</string>
+    <string name="helper_position">Examples: 1, 3+s, -1</string>
+    <string name="hint_fake_ttl">Fake packet TTL</string>
+    <string name="helper_fake_ttl">Used only with the Fake method.</string>
+    <string name="hint_tlsrec">TLS record split position (optional)</string>
+    <string name="helper_tlsrec">Example: 1+s. Leave empty to disable.</string>
+    <string name="switch_auto">Apply only when blocking is detected</string>
+    <string name="hint_timeout">Detection timeout (seconds)</string>
+    <string name="helper_timeout">Used with blocking detection.</string>
+    <string name="hint_custom_args">Custom arguments</string>
+    <string name="helper_custom_args">Do not add -i/--ip or -p/--port; the app sets them.</string>
+    <string name="preview_note">Listen address and port are added automatically.</string>
+    <string name="toast_settings_saved">Settings saved. They apply the next time you connect.</string>
+    <string name="toast_defaults_restored">Defaults restored</string>
+    <string name="error_port">Port must be between 1024 and 65535</string>
+    <string name="error_dns">Enter a valid IP address</string>
+    <string name="error_position">Invalid position</string>
+    <string name="error_ttl">TTL must be between 1 and 255</string>
+    <string name="error_timeout">Timeout must be between 1 and 60</string>
+    <string name="error_custom_invalid">Arguments contain unsupported options</string>
+
+    <string-array name="desync_methods">
+        <item>None (plain proxy)</item>
+        <item>Split</item>
+        <item>Disorder</item>
+        <item>Fake</item>
+        <item>OOB</item>
+        <item>Disorder + OOB</item>
+    </string-array>
+
+    <!-- Diagnostics screen -->
+    <string name="diagnostics_title">Diagnostics</string>
+    <string name="section_engine">Engine</string>
+    <string name="section_state">State</string>
+    <string name="section_check">Connectivity check</string>
+    <string name="section_log">Log</string>
+    <string name="hint_test_host">Host to test (HTTPS)</string>
+    <string name="helper_test_host">Connects through the local proxy to this host on port 443.</string>
+    <string name="check_idle">No check has been run yet.</string>
+    <string name="check_running">Checking…</string>
+    <string name="check_no_proxy">The proxy is not running. Connect first.</string>
+    <string name="check_invalid_host">Enter a valid host name.</string>
+    <string name="log_empty">No log entries yet.</string>
+    <string name="toast_log_copied">Log copied</string>
+    <string name="toast_log_cleared">Log cleared</string>
+    <string name="privacy_note">Only app events are logged, in memory. Visited sites and packet contents are never recorded.</string>
+
+</resources>
