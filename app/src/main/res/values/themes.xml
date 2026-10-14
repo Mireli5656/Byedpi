@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.ByeDPI" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">@color/green</item>
+        <item name="colorOnPrimary">@color/on_green</item>
+        <item name="colorPrimaryContainer">@color/green_dim</item>
+        <item name="colorOnPrimaryContainer">@color/green_light</item>
+        <item name="colorSecondary">@color/green</item>
+        <item name="colorOnSecondary">@color/on_green</item>
+        <item name="colorError">@color/red</item>
+
+        <item name="colorSurface">@color/surface_charcoal</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorSurfaceVariant">@color/card</item>
+        <item name="colorOnSurfaceVariant">@color/text_secondary</item>
+        <item name="colorOutline">@color/outline</item>
+        <item name="colorSurfaceContainerLowest">@color/bg_black</item>
+        <item name="colorSurfaceContainerLow">@color/surface_charcoal</item>
+        <item name="colorSurfaceContainer">@color/card</item>
+        <item name="colorSurfaceContainerHigh">@color/card</item>
+        <item name="colorSurfaceContainerHighest">@color/card_stroke</item>
+
+        <item name="android:colorBackground">@color/bg_black</item>
+        <item name="android:windowBackground">@color/bg_black</item>
+        <item name="android:statusBarColor">@color/bg_black</item>
+        <item name="android:navigationBarColor">@color/bg_black</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:textColorHint">@color/text_hint</item>
+    </style>
+
+</resources>
