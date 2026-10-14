@@ -1,0 +1,168 @@
+name: Build ByeDPI APK
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Upstream native components, pinned for reproducible builds.
+  BYEDPI_REPO: https://github.com/hufrea/byedpi.git
+  BYEDPI_REF: v0.17.3
+  HEV_REPO: https://github.com/heiher/hev-socks5-tunnel.git
+  HEV_REF: "2.17.1"
+  GRADLE_VERSION: "8.9"
+
+jobs:
+  build-debug-apk:
+    name: Build debug APK
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install SDK platform, build-tools and NDK
+        shell: bash
+        run: |
+          set -euo pipefail
+          NDK_VERSION="$(sed -n 's/.*ndkVersion = "\([^"]*\)".*/\1/p' app/build.gradle.kts | head -n 1)"
+          if [ -z "$NDK_VERSION" ]; then
+            echo "::error::ndkVersion not found in app/build.gradle.kts"
+            exit 1
+          fi
+          echo "Installing NDK ${NDK_VERSION}"
+          sdkmanager "platforms;android-35" "build-tools;35.0.0" "ndk;${NDK_VERSION}"
+
+      - name: Verify pinned upstream tags exist
+        shell: bash
+        run: |
+          set -euo pipefail
+          check_ref() {
+            local repo="$1" ref="$2"
+            if git ls-remote --exit-code --tags "$repo" "refs/tags/${ref}" > /dev/null; then
+              echo "OK: ${repo} @ ${ref}"
+            else
+              echo "::error::Tag '${ref}' was not found in ${repo}. Most recent tags:"
+              git ls-remote --tags --refs --sort=-v:refname "$repo" | head -n 10 || true
+              return 1
+            fi
+          }
+          check_ref "$BYEDPI_REPO" "$BYEDPI_REF"
+          check_ref "$HEV_REPO" "$HEV_REF"
+
+      - name: Fetch upstream native sources
+        shell: bash
+        run: |
+          set -euxo pipefail
+          JNI_DIR=app/src/main/jni
+          rm -rf "$JNI_DIR/byedpi" "$JNI_DIR/hev-socks5-tunnel"
+
+          git clone --depth 1 --branch "$BYEDPI_REF" "$BYEDPI_REPO" "$JNI_DIR/byedpi"
+          git clone --depth 1 --branch "$HEV_REF" --recurse-submodules --shallow-submodules \
+            "$HEV_REPO" "$JNI_DIR/hev-socks5-tunnel"
+
+          BYEDPI_SHA="$(git -C "$JNI_DIR/byedpi" rev-parse HEAD)"
+          HEV_SHA="$(git -C "$JNI_DIR/hev-socks5-tunnel" rev-parse HEAD)"
+
+          # Keep the tree clean: nested .git directories are not needed for the build.
+          rm -rf "$JNI_DIR/byedpi/.git" "$JNI_DIR/hev-socks5-tunnel/.git"
+          find "$JNI_DIR/hev-socks5-tunnel" -name .git -prune -exec rm -rf {} +
+
+          # Ship upstream licenses and exact engine versions inside the APK.
+          mkdir -p app/src/main/assets/licenses
+          cp "$JNI_DIR/byedpi/LICENSE" app/src/main/assets/licenses/byedpi-LICENSE.txt
+          cp "$JNI_DIR/hev-socks5-tunnel/LICENSE" app/src/main/assets/licenses/hev-socks5-tunnel-LICENSE.txt
+          {
+            echo "byedpi=${BYEDPI_REF} ${BYEDPI_SHA}"
+            echo "hev-socks5-tunnel=${HEV_REF} ${HEV_SHA}"
+          } > app/src/main/assets/upstream-versions.txt
+
+          {
+            echo "### Upstream native components"
+            echo "- byedpi \`${BYEDPI_REF}\` (\`${BYEDPI_SHA}\`)"
+            echo "- hev-socks5-tunnel \`${HEV_REF}\` (\`${HEV_SHA}\`)"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: ${{ env.GRADLE_VERSION }}
+
+      - name: Build debug APK
+        run: gradle assembleDebug --stacktrace --warning-mode all
+
+      - name: Verify APK contains the native engine
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK=app/build/outputs/apk/debug/app-debug.apk
+          test -f "$APK"
+          ls -l "$APK"
+          LISTING="$(unzip -l "$APK")"
+          for abi in arm64-v8a armeabi-v7a x86_64; do
+            for lib in libbyedpi.so libhev-socks5-tunnel.so; do
+              if ! grep -q "lib/${abi}/${lib}" <<< "$LISTING"; then
+                echo "::error::Missing lib/${abi}/${lib} in APK"
+                exit 1
+              fi
+            done
+          done
+          echo "Native engine libraries present for all ABIs."
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ByeDPI-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Collect diagnostics (on failure)
+        if: failure()
+        shell: bash
+        run: |
+          mkdir -p diagnostics
+          {
+            echo "== uname =="; uname -a
+            echo "== java =="; java -version 2>&1
+            echo "== gradle =="; gradle --version 2>&1 || true
+            echo "== ANDROID_HOME =="; echo "${ANDROID_HOME:-unset}"
+            echo "== installed NDKs =="; ls "${ANDROID_HOME:-/nonexistent}/ndk" 2>&1 || true
+            echo "== upstream versions =="; cat app/src/main/assets/upstream-versions.txt 2>&1 || true
+          } > diagnostics/environment.txt 2>&1 || true
+          find app/src/main/jni -maxdepth 2 2>/dev/null | sort | head -n 200 > diagnostics/jni-tree.txt || true
+          find app/src/main -maxdepth 5 -type f -not -path 'app/src/main/jni/*' 2>/dev/null | sort > diagnostics/project-files.txt || true
+
+      - name: Upload diagnostics (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-diagnostics
+          path: |
+            diagnostics/
+            app/build/reports/
+            app/build/outputs/logs/
+            app/.cxx/**/*.log
+            app/.cxx/**/*.txt
+            app/.cxx/**/*.json
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 14
