@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="error_fix_settings">Some settings are invalid. Please review them.</string>
+    <string name="error_native_unavailable">The native ByeDPI engine could not be loaded on this device.</string>
+    <string name="error_unexpected">An unexpected error occurred: %1$s</string>
+    <string name="error_dns_ipv6">An IPv6 DNS server requires “Tunnel IPv6 traffic”</string>
+    <string name="settings_udp_warning">DNS lookups use UDP too. With UDP proxying off, names may stop resolving.</string>
+    <string name="check_result_ok">Success: TLS handshake completed (%1$s) in %2$d ms.</string>
+    <string name="check_result_failed">Failed at %1$s: %2$s</string>
+    <string name="check_stage_proxy">proxy connection</string>
+    <string name="check_stage_socks">SOCKS5 request</string>
+    <string name="check_stage_tls">TLS handshake</string>
+</resources>
